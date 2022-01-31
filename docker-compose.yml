@@ -7,7 +7,7 @@ services:
       - 8080:8080 
     restart: on-failure
     volumes:
-      - api:/usr/src/app/
+      - rest_api:/usr/src/app/
     depends_on:
       - db 
     networks:
@@ -24,7 +24,7 @@ services:
     ports:
       - '5432:5432'
     volumes:
-      - db_postgres:/var/lib/postgresql/data
+      - database:/var/lib/postgresql/data
     networks:
       - pdv_jwt
 
@@ -39,9 +39,8 @@ services:
       - db
 
 volumes:
-  api:
-  db_postgres:
+  rest_api:
+  database:
 
-# Networks to be created to facilitate communication between containers
 networks:
   pdv_jwt:

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"html"
 	"strings"
 	"time"
@@ -13,8 +14,8 @@ type Product struct {
 	ID                uint64          `gorm:"primary_key;auto_increment" json:"id"`
 	Description       string          `gorm:"size:255;not null;unique" json:"description"`
 	Price             float32         `gorm:"size:255;not null;" json:"price"`
-	ProductCategory   ProductCategory `json:"author"`
-	ProductCategoryId uint32          `sql:"type:int REFERENCES users(id)" json:"product_category_id"`
+	ProductCategory   ProductCategory `json:"productCategories"`
+	ProductCategoryId uint32          `sql:"type:int REFERENCES product_categories(id)" json:"product_category_id"`
 	CreatedAt         time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt         time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
 }
@@ -22,22 +23,18 @@ type Product struct {
 func (p *Product) Prepare() {
 	p.ID = 0
 	p.Description = html.EscapeString(strings.TrimSpace(p.Description))
-	p.Price = 0
 	p.ProductCategory = ProductCategory{}
 	p.CreatedAt = time.Now()
 	p.UpdatedAt = time.Now()
 }
 
 func (p *Product) Validate() error {
-
+	fmt.Println(p.ProductCategoryId)
 	if p.Description == "" {
 		return errors.New("Required Description")
 	}
 	if p.Price < 0 {
 		return errors.New("Invalid Price")
-	}
-	if p.ProductCategoryId < 1 {
-		return errors.New("Required ProductCategory")
 	}
 	return nil
 }
@@ -93,7 +90,7 @@ func (p *Product) FindProductByID(db *gorm.DB, pid uint64) (*Product, error) {
 func (p *Product) UpdateAProduct(db *gorm.DB) (*Product, error) {
 
 	var err error
-	err = db.Debug().Model(&Product{}).Where("id = ?", p.ID).Updates(Product{Description: p.Description, Price: p.Price, UpdatedAt: time.Now()}).Error
+	err = db.Debug().Model(&Product{}).Where("id = ?", p.ID).Updates(Product{Description: p.Description, Price: p.Price, ProductCategoryId: p.ProductCategoryId, UpdatedAt: time.Now()}).Error
 	if err != nil {
 		return &Product{}, err
 	}

@@ -33,26 +33,20 @@ var product_categories = []models.ProductCategory{
 
 var products = []models.Product{
 	models.Product{
-		Description: "Carne de Primeira",
-		Price:       45.50,
-		ProductCategory: models.ProductCategory{
-			Description: "acougue",
-		},
+		Description:       "Carne de Primeira",
+		Price:             45.50,
 		ProductCategoryId: 1,
 	},
 	models.Product{
-		Description: "Pao Frances",
-		Price:       9.90,
-		ProductCategory: models.ProductCategory{
-			Description: "padaria",
-		},
+		Description:       "Pao Frances",
+		Price:             9.90,
 		ProductCategoryId: 2,
 	},
 }
 
 func Load(db *gorm.DB) {
 
-	err := db.Debug().DropTableIfExists(&models.User{}, &models.Product{}, &models.ProductCategory{}).Error
+	err := db.Debug().DropTableIfExists(&models.Product{}, &models.User{}, &models.ProductCategory{}).Error
 	if err != nil {
 		log.Fatalf("cannot drop table: %v", err)
 	}
