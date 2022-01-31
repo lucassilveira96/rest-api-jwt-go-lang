@@ -9,54 +9,81 @@ import (
 
 var users = []models.User{
 	models.User{
-		Nickname: "administrador",
-		Email:    "admin@gmail.com",
+		Nickname: "administrador do sistema",
+		Email:    "administrator@gmail.com",
 		Password: "12345000",
 	},
 	models.User{
-		Nickname: "Lucas da Silva Silveira",
-		Email:    "lucasdasilvasilveira96@gmail.com",
-		Password: "12345000",
+		Nickname: "Lucas Silveira",
+		Email:    "lucas.silva.silveira@rede.ulbra.br",
+		Password: "password",
 	},
 }
 
-var posts = []models.Post{
-	models.Post{
-		Title:   "Title 1",
-		Content: "Hello world 1",
+var product_categories = []models.ProductCategory{
+	models.ProductCategory{
+		ID:          1,
+		Description: "acougue",
 	},
-	models.Post{
-		Title:   "Title 2",
-		Content: "Hello world 2",
+	models.ProductCategory{
+		ID:          2,
+		Description: "padaria",
+	},
+}
+
+var products = []models.Product{
+	models.Product{
+		Description: "Carne de Primeira",
+		Price:       45.50,
+		ProductCategory: models.ProductCategory{
+			Description: "acougue",
+		},
+		ProductCategoryId: 1,
+	},
+	models.Product{
+		Description: "Pao Frances",
+		Price:       9.90,
+		ProductCategory: models.ProductCategory{
+			Description: "padaria",
+		},
+		ProductCategoryId: 2,
 	},
 }
 
 func Load(db *gorm.DB) {
 
-	err := db.Debug().DropTableIfExists(&models.Post{}, &models.User{}).Error
+	err := db.Debug().DropTableIfExists(&models.User{}, &models.Product{}, &models.ProductCategory{}).Error
 	if err != nil {
 		log.Fatalf("cannot drop table: %v", err)
 	}
-	err = db.Debug().AutoMigrate(&models.User{}, &models.Post{}).Error
+	err = db.Debug().AutoMigrate(&models.User{}, &models.ProductCategory{}, &models.Product{}).Error
 	if err != nil {
 		log.Fatalf("cannot migrate table: %v", err)
 	}
 
-	err = db.Debug().Model(&models.Post{}).AddForeignKey("author_id", "users(id)", "cascade", "cascade").Error
+	err = db.Debug().Model(&models.Product{}).AddForeignKey("product_category_id", "product_categories(id)", "cascade", "cascade").Error
 	if err != nil {
 		log.Fatalf("attaching foreign key error: %v", err)
 	}
 
-	for i, _ := range users {
+	for i := range users {
 		err = db.Debug().Model(&models.User{}).Create(&users[i]).Error
 		if err != nil {
 			log.Fatalf("cannot seed users table: %v", err)
 		}
-		posts[i].AuthorID = users[i].ID
+	}
 
-		err = db.Debug().Model(&models.Post{}).Create(&posts[i]).Error
+	for i := range product_categories {
+		err = db.Debug().Model(&models.ProductCategory{}).Create(&product_categories[i]).Error
 		if err != nil {
-			log.Fatalf("cannot seed posts table: %v", err)
+			log.Fatalf("cannot seed product_categories table: %v", err)
+		}
+	}
+
+	for i := range products {
+		err = db.Debug().Model(&models.Product{}).Create(&products[i]).Error
+		if err != nil {
+			log.Fatalf("cannot seed products table: %v", err)
 		}
 	}
 }
