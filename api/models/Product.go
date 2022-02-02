@@ -14,10 +14,13 @@ type Product struct {
 	ID                uint64          `gorm:"primary_key;auto_increment" json:"id"`
 	Description       string          `gorm:"size:255;not null;unique" json:"description"`
 	Price             float32         `gorm:"size:255;not null;" json:"price"`
+	Quantity          int32           `gorm:"size:255;not null;" json:"quantity"`
 	ProductCategory   ProductCategory `json:"productCategories"`
 	ProductCategoryId uint32          `sql:"type:int REFERENCES product_categories(id)" json:"product_category_id"`
-	CreatedAt         time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
-	UpdatedAt         time.Time       `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	Deleted           int32
+	CreatedAt         time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
+	UpdatedAt         time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt         time.Time `gorm:"default:NULL" json:"deleted_at"`
 }
 
 func (p *Product) Prepare() {
@@ -63,7 +66,7 @@ func (p *Product) FindAllProducts(db *gorm.DB) (*[]Product, error) {
 	}
 	if len(products) > 0 {
 		for i := range products {
-			err := db.Debug().Model(&User{}).Where("id = ?", products[i].ProductCategoryId).Take(&products[i].ProductCategory).Error
+			err := db.Debug().Model(&Product{}).Where("id = ?", products[i].ProductCategoryId).Take(&products[i].ProductCategory).Error
 			if err != nil {
 				return &[]Product{}, err
 			}
@@ -90,7 +93,7 @@ func (p *Product) FindProductByID(db *gorm.DB, pid uint64) (*Product, error) {
 func (p *Product) UpdateAProduct(db *gorm.DB) (*Product, error) {
 
 	var err error
-	err = db.Debug().Model(&Product{}).Where("id = ?", p.ID).Updates(Product{Description: p.Description, Price: p.Price, ProductCategoryId: p.ProductCategoryId, UpdatedAt: time.Now()}).Error
+	err = db.Debug().Model(&Product{}).Where("id = ?", p.ID).Updates(Product{Description: p.Description, Price: p.Price, ProductCategoryId: p.ProductCategoryId, Quantity: p.Quantity, UpdatedAt: time.Now()}).Error
 	if err != nil {
 		return &Product{}, err
 	}
@@ -103,15 +106,18 @@ func (p *Product) UpdateAProduct(db *gorm.DB) (*Product, error) {
 	return p, nil
 }
 
-func (p *Product) DeleteAProduct(db *gorm.DB, pid uint64) (int64, error) {
+func (p *Product) DeleteAProduct(db *gorm.DB, pid uint64) (*Product, error) {
 
-	db = db.Debug().Model(&Product{}).Where("id = ?", pid).Take(&Product{}).Delete(&Product{})
-
-	if db.Error != nil {
-		if gorm.IsRecordNotFoundError(db.Error) {
-			return 0, errors.New("Product not found")
-		}
-		return 0, db.Error
+	var err error
+	err = db.Debug().Model(&Product{}).Where("id = ?", pid).Updates(Product{Deleted: 1, DeletedAt: time.Now()}).Error
+	if err != nil {
+		return &Product{}, err
 	}
-	return db.RowsAffected, nil
+	if p.ID != 0 {
+		err = db.Debug().Model(&ProductCategory{}).Where("id = ?", p.ProductCategoryId).Take(&p.ProductCategory).Error
+		if err != nil {
+			return &Product{}, err
+		}
+	}
+	return p, nil
 }

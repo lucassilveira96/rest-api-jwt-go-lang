@@ -28,13 +28,13 @@ services:
     networks:
       - pdv_jwt
 
-  pgadmin-compose:
+  pgadmin:
     image: dpage/pgadmin4
     environment:
       PGADMIN_DEFAULT_EMAIL: "lucas.silva.silveira@rede.ulbra.br"
       PGADMIN_DEFAULT_PASSWORD: "123456"
     ports:
-      - "54321:80"
+      - "5454:80"
     depends_on:
       - db
 

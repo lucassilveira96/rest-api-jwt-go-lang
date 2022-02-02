@@ -17,7 +17,7 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/users/{id}", middlewares.SetMiddlewareJSON(middlewares.SetMiddlewareAuthentication(s.UpdateUser))).Methods("PUT")
 	s.Router.HandleFunc("/users/{id}", middlewares.SetMiddlewareAuthentication(s.DeleteUser)).Methods("DELETE")
 
-	//Products routes
+	//Products products
 	s.Router.HandleFunc("/products", middlewares.SetMiddlewareJSON(s.CreateProduct)).Methods("POST")
 	s.Router.HandleFunc("/products", middlewares.SetMiddlewareJSON(s.GetAllProducts)).Methods("GET")
 	s.Router.HandleFunc("/products/{id}", middlewares.SetMiddlewareJSON(s.GetProduct)).Methods("GET")
@@ -30,4 +30,11 @@ func (s *Server) initializeRoutes() {
 	s.Router.HandleFunc("/product/categories/{id}", middlewares.SetMiddlewareJSON(s.GetProductCategory)).Methods("GET")
 	s.Router.HandleFunc("/product/categories/{id}", middlewares.SetMiddlewareJSON(middlewares.SetMiddlewareAuthentication(s.UpdateProductCategory))).Methods("PUT")
 	s.Router.HandleFunc("/product/categories/{id}", middlewares.SetMiddlewareAuthentication(s.DeleteProductCategory)).Methods("DELETE")
+
+	//Product Categories stocks
+	s.Router.HandleFunc("/stocks", middlewares.SetMiddlewareJSON(s.CreateStock)).Methods("POST")
+	s.Router.HandleFunc("/stocks", middlewares.SetMiddlewareJSON(s.GetAllStocks)).Methods("GET")
+	s.Router.HandleFunc("/stocks/{id}", middlewares.SetMiddlewareJSON(s.GetStock)).Methods("GET")
+	s.Router.HandleFunc("/stocks/{id}", middlewares.SetMiddlewareJSON(middlewares.SetMiddlewareAuthentication(s.UpdateStock))).Methods("PUT")
+	s.Router.HandleFunc("/stocks/{id}", middlewares.SetMiddlewareAuthentication(s.DeleteStock)).Methods("DELETE")
 }

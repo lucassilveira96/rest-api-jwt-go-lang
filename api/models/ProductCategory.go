@@ -10,10 +10,12 @@ import (
 )
 
 type ProductCategory struct {
-	ID          uint64    `gorm:"primary_key;auto_increment" json:"id"`
-	Description string    `gorm:"size:255;not null;unique" json:"description"`
+	ID          uint64 `gorm:"primary_key;auto_increment" json:"id"`
+	Description string `gorm:"size:255;not null;unique" json:"description"`
+	Deleted     int32
 	CreatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"created_at"`
 	UpdatedAt   time.Time `gorm:"default:CURRENT_TIMESTAMP" json:"updated_at"`
+	DeletedAt   time.Time `gorm:"default:NULL" json:"deleted_at"`
 }
 
 func (p *ProductCategory) Prepare() {
@@ -70,15 +72,12 @@ func (p *ProductCategory) UpdateAProductCategory(db *gorm.DB) (*ProductCategory,
 	return p, nil
 }
 
-func (p *ProductCategory) DeleteAProductCategory(db *gorm.DB, pid uint64) (int64, error) {
+func (p *ProductCategory) DeleteAProductCategory(db *gorm.DB, pid uint64) (*ProductCategory, error) {
 
-	db = db.Debug().Model(&ProductCategory{}).Where("id = ?", pid).Take(&ProductCategory{}).Delete(&ProductCategory{})
-
-	if db.Error != nil {
-		if gorm.IsRecordNotFoundError(db.Error) {
-			return 0, errors.New("Product Category not found")
-		}
-		return 0, db.Error
+	var err error
+	err = db.Debug().Model(&ProductCategory{}).Where("id = ?", pid).Updates(ProductCategory{DeletedAt: time.Now(), Deleted: 1}).Error
+	if err != nil {
+		return &ProductCategory{}, err
 	}
-	return db.RowsAffected, nil
+	return p, nil
 }
